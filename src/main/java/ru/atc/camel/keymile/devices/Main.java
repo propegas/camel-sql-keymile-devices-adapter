@@ -86,6 +86,7 @@ public class Main {
 				
 				PropertiesComponent properties = new PropertiesComponent();
 				properties.setLocation("classpath:keymile.properties");
+				properties.setEncoding("UTF-8");
 				context.addComponent("properties", properties);
 
 				ConnectionFactory connectionFactory = new ActiveMQConnectionFactory
@@ -122,6 +123,7 @@ public class Main {
 		    			+ "postgresql_host={{postgresql_host}}&"
 		    			+ "postgresql_db={{postgresql_db}}&"
 		    			+ "postgresql_port={{postgresql_port}}&"
+		    			+ "serviceNodeGroup={{serviceNodeGroup}}&"
 		    			+ "source={{source}}&"
 		    			+ "adaptername={{adaptername}}")
 				.marshal(myJson)

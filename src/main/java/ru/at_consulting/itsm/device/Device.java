@@ -58,9 +58,11 @@ public class Device implements  Serializable {
      
      private String parentID;
 
-	private String systemname;
+	private String systemName;
 	
 	private String source;
+	
+	private String service;
      
      
     
@@ -168,19 +170,6 @@ public class Device implements  Serializable {
 			this.parentID = parentID;
 		}
 
-		public void setSystemName(String systemname) {
-			// TODO Auto-generated method stub
-			this.setSystemname(systemname);
-		}
-
-		public String getSystemname() {
-			return systemname;
-		}
-
-		public void setSystemname(String systemname) {
-			this.systemname = systemname;
-		}
-
 		public String getModelNumber() {
 			return modelNumber;
 		}
@@ -203,6 +192,22 @@ public class Device implements  Serializable {
 
 		public void setSource(String source) {
 			this.source = source;
+		}
+
+		public String getSystemName() {
+			return systemName;
+		}
+
+		public void setSystemName(String systemName) {
+			this.systemName = systemName;
+		}
+
+		public String getService() {
+			return service;
+		}
+
+		public void setService(String service) {
+			this.service = service;
 		}
    
      

@@ -14,6 +14,8 @@ public class KeymileConfiguration {
 	
 	private String adaptername;
 	
+	private String serviceNodeGroup;
+	
 	
 	@UriParam
     private String postgresql_db;
@@ -111,6 +113,14 @@ public class KeymileConfiguration {
 
 	public void setAdaptername(String adaptername) {
 		this.adaptername = adaptername;
+	}
+
+	public String getServiceNodeGroup() {
+		return serviceNodeGroup;
+	}
+
+	public void setServiceNodeGroup(String serviceNodeGroup) {
+		this.serviceNodeGroup = serviceNodeGroup;
 	}
 
 

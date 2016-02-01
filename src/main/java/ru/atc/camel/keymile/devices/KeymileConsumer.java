@@ -9,12 +9,14 @@ package ru.atc.camel.keymile.devices;
 //import java.io.InputStreamReader;
 //import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Date;
+//import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 //import java.util.regex.Matcher;
 //import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -49,32 +51,36 @@ import ru.at_consulting.itsm.event.Event;
 
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+//import org.apache.commons.lang.ArrayUtils;
+//import org.apache.commons.lang.exception.ExceptionUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+//import java.sql.Timestamp;
+//import java.text.SimpleDateFormat;
 
 //import com.mysql.jdbc.Connection;
 //import com.mysql.jdbc.Driver;
 import org.postgresql.Driver;
 
 
-
 public class KeymileConsumer extends ScheduledPollConsumer {
 	
-	private String[] openids = {  };
+	//private String[] openids = {  };
 	
 	private static Logger logger = LoggerFactory.getLogger(Main.class);
 	
 	public static KeymileEndpoint endpoint;
 	
 	public static ModelCamelContext context;
+	
+	private static String parentNodeGroupHash = "";
 	
 	public enum PersistentEventSeverity {
 	    OK, INFO, WARNING, MINOR, MAJOR, CRITICAL;
@@ -90,7 +96,7 @@ public class KeymileConsumer extends ScheduledPollConsumer {
 
 	public KeymileConsumer(KeymileEndpoint endpoint, Processor processor) {
         super(endpoint, processor);
-        this.endpoint = endpoint;
+        KeymileConsumer.endpoint = endpoint;
         //this.afterPoll();
         this.setTimeUnit(TimeUnit.MINUTES);
         this.setInitialDelay(0);
@@ -206,12 +212,18 @@ public class KeymileConsumer extends ScheduledPollConsumer {
 		//Long timestamp;
 		BasicDataSource dataSource = setupDataSource();
 		
+		List<HashMap<String, Object>> listNodeGroups = new ArrayList<HashMap<String, Object>>();
 		List<HashMap<String, Object>> listAllDevices = new ArrayList<HashMap<String,Object>>();
-		List<HashMap<String, Object>> listClosedEvents = new ArrayList<HashMap<String,Object>>();
+		//List<HashMap<String, Object>> listClosedEvents = new ArrayList<HashMap<String,Object>>();
 		//List<HashMap<String, Object>> listVmStatuses = null;
 		int events = 0;
 		//int statuses = 0;
 		try {
+			
+			// generate NodeGroup
+			logger.info(String.format("***Try to generate NodeGroup***"));
+			listNodeGroups = getNodeGroups();
+			listAllDevices.addAll(listNodeGroups);
 			
 			// get All Nodes (units)
 			logger.info( String.format("***Try to get All Nodes***"));
@@ -249,8 +261,7 @@ public class KeymileConsumer extends ScheduledPollConsumer {
 				exchange.getIn().setBody(gendevice, Device.class);
 				exchange.getIn().setHeader("DeviceId", key);
 				exchange.getIn().setHeader("DeviceType", gendevice.getDeviceType());
-				
-				
+		        exchange.getIn().setHeader("ParentId", gendevice.getParentID());
 				
 				//exchange.getIn().setHeader("DeviceType", vmevents.get(i).getDeviceType());
 
@@ -321,6 +332,65 @@ public class KeymileConsumer extends ScheduledPollConsumer {
 		//removeLineFromFile("sendedEvents.dat", "Tgc1-1Cp1_ping_OK");
 	
         return 1;
+	}
+	
+	private List<HashMap<String, Object>> getNodeGroups() {
+		List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+
+		logger.info(" **** Try to generate main service NodeGroup ***** ");
+
+		try {
+			
+			String nodeGroupName = endpoint.getConfiguration().getServiceNodeGroup();
+			
+			HashMap<String, Object> row = new HashMap<String, Object>(3);
+			
+			logger.debug(String.format("*** Trying to generate parentNodeGroupHash for main service NodeGroup with Pattern: %s", 
+					nodeGroupName));
+			//String parentNodeGroupHash = "";
+			try {
+				parentNodeGroupHash = hashString(String.format("%s", nodeGroupName), "SHA-1");
+			} catch (Exception e) {
+			
+				e.printStackTrace();
+			}
+			logger.debug("*** Generated Hash: " + parentNodeGroupHash );
+			
+			String newHostgroupName = ""; 
+			String service = "";
+			
+			// Example group : 
+			// (Невский.СЭ)ТЭЦ-1
+			Pattern p = Pattern.compile("\\((.*)\\)(.*)");
+			Matcher matcher = p.matcher(nodeGroupName);
+			
+			// if nodegroup has Group pattern
+			if (matcher.matches()) {
+				logger.debug("*** Finded NodeGroup with Pattern: " + nodeGroupName);
+				
+				newHostgroupName = matcher.group(2).toString();
+				service = matcher.group(1).toString();
+
+			    logger.debug("*** newHostgroupName: " + newHostgroupName );
+			    logger.debug("*** service: " + service );
+				
+			}
+			else
+				return null;
+						
+			row.put("id", parentNodeGroupHash);
+			row.put("name", newHostgroupName);
+			row.put("service", service);
+			
+			logger.info(String.format(row.toString()));
+
+			list.add(row);
+			
+		}catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		return list;
 	}
 	
 	private List<HashMap<String, Object>> getAllDevices(BasicDataSource dataSource) throws SQLException, Throwable {
@@ -399,18 +469,38 @@ public class KeymileConsumer extends ScheduledPollConsumer {
 		// TODO Auto-generated method stub
 		Device gendevice = new Device();
 		
-		gendevice.setName(alarm.get("name").toString());
-		gendevice.setSystemName(alarm.get("hwname").toString());
-		gendevice.setDeviceType(alarm.get("type").toString());
-		gendevice.setModelNumber(alarm.get("manufacturerpn").toString());
-		gendevice.setSerialNumber(alarm.get("manufacturersn").toString());
-		gendevice.setDescription(alarm.get("cfgdescription").toString());
-		gendevice.setId(alarm.get("nodeid").toString());
-		gendevice.setParentID(alarm.get("parentid").toString());
-		//gendevice.setParentID(node.getCustomAttributes()[0].G.getValue());
-		gendevice.setSource(String.format("%s", endpoint.getConfiguration().getSource()));
-		//gendevice.set
+		logger.debug(String.format("ID: %s ", alarm.get("id").toString()));
 		
+		// if NodeGroup
+		if (alarm.get("id").toString().equals(parentNodeGroupHash)) {
+			gendevice.setId(parentNodeGroupHash);
+			gendevice.setName(String.format("%s", alarm.get("name").toString()));
+			gendevice.setService(String.format("%s", alarm.get("service").toString()));
+			gendevice.setDeviceType("NodeGroup");
+		}
+		else {
+			gendevice.setName(alarm.get("name").toString());
+			gendevice.setSystemName(alarm.get("hwname").toString());
+			gendevice.setDeviceType(alarm.get("type").toString());
+			gendevice.setModelNumber(alarm.get("manufacturerpn").toString());
+			gendevice.setSerialNumber(alarm.get("manufacturersn").toString());
+			gendevice.setDescription(alarm.get("cfgdescription").toString());
+			gendevice.setId(String.format("%s:%s", endpoint.getConfiguration().getSource(),
+									alarm.get("nodeid").toString()));
+			
+			String parentid = alarm.get("parentid").toString();
+			if (parentid.equals("0"))
+				parentid = null;
+			else 
+				parentid = String.format("%s:%s", endpoint.getConfiguration().getSource(), parentid);
+			
+			gendevice.setParentID(parentid);
+			//set main service NodeGroup as a parent for all node
+			if (gendevice.getParentID() == null || gendevice.getParentID().isEmpty())
+				gendevice.setParentID(parentNodeGroupHash);
+		}
+		
+		gendevice.setSource(String.format("%s", endpoint.getConfiguration().getSource()));
 	
 		logger.info(gendevice.toString());
 		
@@ -433,7 +523,7 @@ public class KeymileConsumer extends ScheduledPollConsumer {
 	        //logger.debug("MYSQL rows2 count: " + count); 
 	        //resultset.beforeFirst();
 	        
-	        int i = 0, n = 0;
+	       // int i = 0, n = 0;
 	        //ArrayList<String> arrayList = new ArrayList<String>(); 
 	
 	        while (resultset.next()) {              
@@ -495,5 +585,27 @@ public class KeymileConsumer extends ScheduledPollConsumer {
 		return newseverity;
 	}
 	
+	private static String hashString(String message, String algorithm)
+            throws Exception {
+ 
+        try {
+            MessageDigest digest = MessageDigest.getInstance(algorithm);
+            byte[] hashedBytes = digest.digest(message.getBytes("UTF-8"));
+ 
+            return convertByteArrayToHexString(hashedBytes);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+            throw new RuntimeException(
+                    "Could not generate parentNodeGroupHash from String", ex);
+        }
+	}
+	
+	private static String convertByteArrayToHexString(byte[] arrayBytes) {
+        StringBuffer stringBuffer = new StringBuffer();
+        for (int i = 0; i < arrayBytes.length; i++) {
+            stringBuffer.append(Integer.toString((arrayBytes[i] & 0xff) + 0x100, 16)
+                    .substring(1));
+        }
+        return stringBuffer.toString();
+    }
 	
 }
