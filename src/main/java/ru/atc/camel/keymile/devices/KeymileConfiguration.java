@@ -1,127 +1,118 @@
 package ru.atc.camel.keymile.devices;
 
-import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriParams;
 
 @UriParams
-public class KeymileConfiguration {	
-    
-	private String username;
-	
-	private String password;
-	
-	private String source;
-	
-	private String adaptername;
-	
-	private String serviceNodeGroup;
-	
-	
-	@UriParam
-    private String postgresql_db;
-    
-    @UriParam
-    private String postgresql_host;
-    
-    @UriParam
-    private String table_prefix;
-    
-    public String getTable_prefix() {
-		return table_prefix;
-	}
+public class KeymileConfiguration {
 
-	public void setTable_prefix(String table_prefix) {
-		this.table_prefix = table_prefix;
-	}
+    private String username;
 
-	@UriParam
-    private String postgresql_port;
-    
-    @UriParam
+    private String password;
+
+    private String source;
+
+    private String adaptername;
+
+    private String serviceNodeGroup;
+
+    private String postgresqlDb;
+
+    private String postgresqlHost;
+
+    private String tablePrefix;
+
+    private String postgresqlPort;
+
     private String query;
-    
-    @UriParam(defaultValue = "60000")
-    private int delay = 60000;
 
-	public int getDelay() {
-		return delay;
-	}
+    private int delay;
 
-	public void setDelay(int delay) {
-		this.delay = delay;
-	}
+    public String getTablePrefix() {
+        return tablePrefix;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public int getDelay() {
+        return delay;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public void setDelay(int delay) {
+        this.delay = delay;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public String getPostgresql_port() {
-		return postgresql_port;
-	}
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	public void setPostgresql_port(String postgresql_port) {
-		this.postgresql_port = postgresql_port;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public String getPostgresql_host() {
-		return postgresql_host;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public void setPostgresql_host(String postgresql_host) {
-		this.postgresql_host = postgresql_host;
-	}
+    public String getPostgresqlPort() {
+        return postgresqlPort;
+    }
 
-	public String getQuery() {
-		return query;
-	}
+    public void setPostgresqlPort(String postgresqlPort) {
+        this.postgresqlPort = postgresqlPort;
+    }
 
-	public void setQuery(String query) {
-		this.query = query;
-	}
+    public String getPostgresqlHost() {
+        return postgresqlHost;
+    }
 
-	public String getPostgresql_db() {
-		return postgresql_db;
-	}
+    public void setPostgresqlHost(String postgresqlHost) {
+        this.postgresqlHost = postgresqlHost;
+    }
 
-	public void setPostgresql_db(String postgresql_db) {
-		this.postgresql_db = postgresql_db;
-	}
+    public String getQuery() {
+        return query;
+    }
 
-	public String getSource() {
-		return source;
-	}
+    public void setQuery(String query) {
+        this.query = query;
+    }
 
-	public void setSource(String source) {
-		this.source = source;
-	}
+    public String getPostgresqlDb() {
+        return postgresqlDb;
+    }
 
-	public String getAdaptername() {
-		return adaptername;
-	}
+    public void setPostgresqlDb(String postgresqlDb) {
+        this.postgresqlDb = postgresqlDb;
+    }
 
-	public void setAdaptername(String adaptername) {
-		this.adaptername = adaptername;
-	}
+    public String getSource() {
+        return source;
+    }
 
-	public String getServiceNodeGroup() {
-		return serviceNodeGroup;
-	}
+    public void setSource(String source) {
+        this.source = source;
+    }
 
-	public void setServiceNodeGroup(String serviceNodeGroup) {
-		this.serviceNodeGroup = serviceNodeGroup;
-	}
+    public String getAdaptername() {
+        return adaptername;
+    }
 
+    public void setAdaptername(String adaptername) {
+        this.adaptername = adaptername;
+    }
+
+    public String getServiceNodeGroup() {
+        return serviceNodeGroup;
+    }
+
+    public void setServiceNodeGroup(String serviceNodeGroup) {
+        this.serviceNodeGroup = serviceNodeGroup;
+    }
 
 }
