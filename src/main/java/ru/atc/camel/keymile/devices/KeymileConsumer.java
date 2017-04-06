@@ -286,7 +286,7 @@ public class KeymileConsumer extends ScheduledPollConsumer {
 
     private Device genDeviceObj(HashMap<String, Object> alarm) {
 
-        Device gendevice = new Device();
+        Device gendevice = new Device(endpoint.getConfiguration().getAdaptername());
 
         // if NodeGroup
         if (alarm.containsKey("id") && alarm.get("id").toString().equals(parentNodeGroupHash)) {

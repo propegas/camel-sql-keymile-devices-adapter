@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ru.atc.monitoring</groupId>
 	<artifactId>camel-sql-keymile-devices-adapter</artifactId>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.4.2-SNAPSHOT</version>
 	
 	<properties>
  		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -115,7 +115,7 @@
 		<dependency>
 			<groupId>ru.atc.adapters.general</groupId>
 			<artifactId>message-api</artifactId>
-			<version>1.2.2</version>
+			<version>1.2.4</version>
 		</dependency>
 		
 	</dependencies>

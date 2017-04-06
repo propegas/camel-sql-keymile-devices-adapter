@@ -109,6 +109,7 @@ public final class Main {
 
                     .otherwise()
                     .to("activemq:{{devicesqueue}}")
+                    .log(LoggingLevel.DEBUG, logger, "*** NEW DEVICE BODY: ${in.body}")
                     .log("*** Device: ${id} ${header.DeviceId} ${header.DeviceType}");
 
             // Heartbeats
